@@ -15,13 +15,9 @@ setwd("/nfs/turbo/umms-thahoang/sherine/mouseCutandTag/archr")
 addArchRGenome("mm10")
 
 project_name ="OCT4andRBPJ"
-
 proj_ALL <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRUE)
 
 
-if (FALSE)
-{
-######
 atacFiles <- c("Control_mCherry" = "Control_mCherry_NMDA_atac_fragments.tsv.gz", "Control_Oct4" = "Control_Oct4_NMDA_atac_fragments.tsv.gz", "Rbpj_mCherry" = "Rbpj_mCherry_NMDA_atac_fragments.tsv.gz", "Rbpj_Oct4" = "Rbpj_Oct4_NMDA_atac_fragments.tsv.gz")
 
 rnaFiles <- c("Control_mCherry" = "Control_mCherry_NMDA_filtered_feature_bc_matrix.h5", "Control_Oct4" = "Control_Oct4_NMDA_filtered_feature_bc_matrix.h5", "Rbpj_mCherry" = "Rbpj_mCherry_NMDA_filtered_feature_bc_matrix.h5", "Rbpj_Oct4" = "Rbpj_Oct4_NMDA_filtered_feature_bc_matrix.h5")
@@ -96,8 +92,69 @@ seRNA_all<-SummarizedExperiment(assays=list(counts=seRNAcombined), rowRanges= ro
 
 project_ALL <- ArchRProject(ArrowFiles = ArrowFiles, outputDirectory = "OCT4andRBPJ", copyArrows = FALSE)
 proj_ALL <-addGeneExpressionMatrix(input=project_ALL, seRNA=seRNA_all)
-proj_ALL <- proj_ALL[proj_ALL$TSSEnrichment > 6 & proj_ALL$nFrags > 2500 & !is.na(proj_ALL$Gex_nUMI)]
 
+
+figure_name <- project_name
+figure_name <- paste(figure_name,"_QC.pdf", sep="")
+p1 <- plotGroups(
+    ArchRProj = proj_ALL, 
+    groupBy = "Sample", 
+    colorBy = "cellColData", 
+    name = "TSSEnrichment",
+    plotAs = "violin",
+    alpha = 0.4,
+    addBoxPlot = TRUE
+   )
+   
+p2 <- plotGroups(
+    ArchRProj = proj_ALL, 
+    groupBy = "Sample", 
+    colorBy = "cellColData", 
+    name = "log10(nFrags)",
+    plotAs = "violin",
+    alpha = 0.4,
+    addBoxPlot = TRUE
+   )
+
+p3 <- plotGroups(
+    ArchRProj = proj_ALL,
+    groupBy = "Sample",
+    colorBy = "cellColData",
+    name = "Gex_nUMI",
+    plotAs = "violin",
+    alpha = 0.4,
+    addBoxPlot = TRUE
+   )
+
+p1
+p2
+p3 
+dev.off ()
+
+figure_name <- project_name
+figure_name <- paste(figure_name,"_ClustersQC.pdf", sep="")
+p <- plotGroups(
+    ArchRProj = proj_ALL,
+    groupBy = "Clusters_Combined",
+    colorBy = "cellColData",
+    name = "Gex_nUMI",
+    plotAs = "violin",
+    alpha = 0.4,
+    addBoxPlot = TRUE
+   )
+p
+dev.off() 
+
+#Before Filtering
+table(proj_ALL$Sample)
+
+#Print values we can use for filtering and in plots 
+head(proj_ALL@cellColData) 
+proj_ALL <- proj_ALL[proj_ALL$TSSEnrichment > 10 & proj_ALL$nFrags > 5000 & !is.na(proj_ALL$Gex_nUMI)]
+proj_ALL <- proj_ALL[proj_ALL$Gex_nGenes > 500 & proj_ALL$Gex_nGenes < 5000 & proj_ALL$Gex_nUMI > 1000 & proj_ALL$Gex_nUMI < 15000  ]
+
+
+#After Filtering 
 table(proj_ALL$Sample)
 
 
@@ -162,7 +219,7 @@ proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_Combined", name = "Clusters
 
 saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4andRBPJ", load = FALSE)
 #----------------------------------
-#Plotting UMAPS
+
 #----------------------------------
 figure_name <- project_name
 figure_name <- paste(figure_name,"_clusters.pdf", sep="")
@@ -223,7 +280,7 @@ dev.off()
 #-------------------------------------
 #Adding Impute Weights using Harmony
 #-------------------------------------
-proj_ALL <- addImputeWeights(ArchRProj = proj_ALL,reducedDims = "Harmony", scaleDims=NULL, corCutOff =0.5)
+proj_ALL <- addImputeWeights(ArchRProj = proj_ALL,reducedDims = "Harmony", scaleDims=TRUE, corCutOff =0.5)
 
 #-------------------------------------
 #Plotting Gene Expressions 
@@ -235,7 +292,7 @@ markerGenes2 <- c("Lhx1","Csf1r", "Ccr2", "Pax2","Kcnj8","Rlbp1", "Ascl1", "Otx2
 markerGenes3 <- c("Olig2", "Crx","Neurog2","Rpe65", "Acta2", "Tie1", "Klf4","Grm6")
 markerGenes4 <- c("Grik1","Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4")
 markerGenes5 <- c("Gnat1", "Pcp2", "Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2", "Csf1r")
-
+markerGenes6 <- c("Grik1","Rho", "Arr3", "Tfap2b","Insm1","Prdm1", "Gnat2","Nrl","Gnat1","Opn1mw","Pdc") 
 
 
 p11 <-plotEmbedding(
@@ -363,7 +420,7 @@ pdf(file =figure_name, width=12)
 do.call(cowplot::plot_grid, c(list(ncol = 3),p5))
 dev.off()
 
-}
+
 #-----------------------------------
 #Calling Peaks 
 #-----------------------------------
@@ -384,6 +441,8 @@ markersPeaks <- getMarkerFeatures(
   bias = c("TSSEnrichment", "log10(nFrags)"),
   testMethod = "wilcoxon"
 )
+markerList
+markerList$C1 
 
 heatmapPeaks <- markerHeatmap(
   seMarker = markersPeaks,
@@ -417,13 +476,20 @@ pdf(file =figure_name, width=12)
 plotPDF(p, name = "Plot-Tracks-With-Features", width = 5, height = 5, ArchRProj = proj_ALL, addDOC = FALSE)
 dev.off()
 
+
+peakSet <- getPeakSet(proj_ALL)
+write.csv(peakSet, "peakSet.csv")
+peakMatrix <- getAvailableMatrices(proj_ALL)
+peakMatrix
+
+
 saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4andRBPJ", load = FALSE)
 
 #----------------------
 #Calling Motifs 
 #----------------------
 proj_ALL <- addMotifAnnotations(ArchRProj = proj_ALL, motifSet = "cisbp", name = "Motif")
-motifs <- peakAnnoEnrichment(
+motifsUP <- peakAnnoEnrichment(
     seMarker = markersPeaks,
     ArchRProj = proj_ALL,
     peakAnnotation = "Motif",
@@ -432,7 +498,7 @@ motifs <- peakAnnoEnrichment(
 #-----------------------
 #Plotting Motifs 
 #-----------------------
-heatmapEM <- plotEnrichHeatmap(motifs, n = 7, transpose = TRUE)
+heatmapEM <- plotEnrichHeatmap(motifsUP, n = 7, transpose = TRUE)
 figure_name =""
 figure_name <- paste(figure_name,"motifs.pdf", sep="")
 pdf(file =figure_name, width=12)
@@ -440,6 +506,64 @@ ComplexHeatmap::draw(heatmapEM, heatmap_legend_side = "bot", annotation_legend_s
 plotPDF(heatmapEM, name = "Motifs-Enriched-Marker-Heatmap", width = 8, height = 6, ArchRProj = proj_ALL, addDOC = FALSE)
 dev.off()
 
+df <- data.frame(TF = rownames(motifsUp), mlog10Padj = assay(motifsUp)[,1])
+df <- df[order(df$mlog10Padj, decreasing = TRUE),]
+df$rank <- seq_len(nrow(df))
+
+figure_name =""
+figure_name <- paste(figure_name,"motifsUP.pdf", sep="")
+pdf(file =figure_name, width=12)
+
+ggUp <- ggplot(df, aes(rank, mlog10Padj, color = mlog10Padj)) +
+  geom_point(size = 1) +
+  ggrepel::geom_label_repel(
+        data = df[rev(seq_len(30)), ], aes(x = rank, y = mlog10Padj, label = TF),
+        size = 1.5,
+        nudge_x = 2,
+        color = "black"
+  ) + theme_ArchR() +
+  ylab("-log10(P-adj) Motif Enrichment") +
+  xlab("Rank Sorted TFs Enriched") +
+  scale_color_gradientn(colors = paletteContinuous(set = "comet"))
+ggUp
+dev.off()
+
+motifsDo <-peakAnnoEnrichment(
+    seMarker = markersPeaks,
+    ArchRProj = proj_ALL,
+    peakAnnotation = "Motif",
+    cutOff = "FDR <= 0.1 & Log2FC <= -0.5"  )
+
+motifsDo
+df <- data.frame(TF = rownames(motifsDo), mlog10Padj = assay(motifsDo)[,1])
+df <- df[order(df$mlog10Padj, decreasing = TRUE),]
+df$rank <- seq_len(nrow(df))
+head(df)
+
+figure_name =""
+figure_name <- paste(figure_name,"motifsDo.pdf", sep="")
+pdf(file =figure_name, width=12)
+
+ggDo <- ggplot(df, aes(rank, mlog10Padj, color = mlog10Padj)) +
+  geom_point(size = 1) +
+  ggrepel::geom_label_repel(
+        data = df[rev(seq_len(30)), ], aes(x = rank, y = mlog10Padj, label = TF),
+        size = 1.5,
+        nudge_x = 2,
+        color = "black"
+  ) + theme_ArchR() +
+  ylab("-log10(FDR) Motif Enrichment") +
+  xlab("Rank Sorted TFs Enriched") +
+  scale_color_gradientn(colors = paletteContinuous(set = "comet"))
+
+ggDo
+dev.off()
+
 saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4andRBPJ", load = FALSE)
+
+
+
+clusters <- c("C3", "C4", "C5", "C6", "C8", "C9", "C10","C12", "C13", "C14", "C15")
+proj_subset = subsetArchRProject(proj_ALL,proj_ALL$cellNames[proj_ALL$Clusters_Combined %in% clusters] , outputDirectory = "OCT4_subset" ,force =TRUE,dropCells = TRUE)
 
 
