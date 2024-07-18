@@ -14,7 +14,7 @@ setwd("/nfs/turbo/umms-thahoang/sherine/mouseCutandTag/archr")
 
 addArchRGenome("mm10")
 
-project_name ="OCT4andRBPJ"
+project_name ="OCT4"
 proj_ALL <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRUE)
 
 
@@ -287,138 +287,21 @@ proj_ALL <- addImputeWeights(ArchRProj = proj_ALL,reducedDims = "Harmony", scale
 #-------------------------------------
 
 markerGenes <- c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms", "Lhx1","Csf1r", "Ccr2", "Pax2","Kcnj8","Rlbp1", "Ascl1", "Otx2", "Olig2", "Crx","Neurog2","Rpe65", "Acta2", "Tie1", "Klf4","Grm6","Grik1","Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4","Gnat1", "Pcp2", "Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2", "Csf1r")
-markerGenes1 <- c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms")
-markerGenes2 <- c("Lhx1","Csf1r", "Ccr2", "Pax2","Kcnj8","Rlbp1", "Ascl1", "Otx2")
-markerGenes3 <- c("Olig2", "Crx","Neurog2","Rpe65", "Acta2", "Tie1", "Klf4","Grm6")
-markerGenes4 <- c("Grik1","Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4")
-markerGenes5 <- c("Gnat1", "Pcp2", "Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2", "Csf1r")
-markerGenes6 <- c("Grik1","Rho", "Arr3", "Tfap2b","Insm1","Prdm1", "Gnat2","Nrl","Gnat1","Opn1mw","Pdc") 
 
+figure_name <- project_name
+figure_name <- paste(figure_name,"_features.pdf", sep="")
+pdf(file =figure_name, width=12)
 
-p11 <-plotEmbedding(
+p <-plotEmbedding(
 ArchRProj = proj_ALL,
 colorBy = "GeneExpressionMatrix",
-name = markerGenes1,
+name = markerGenes,
 quantCut = c(0.01, 0.99),
 embedding = "UMAP_Harmony",  imputeWeights= getImputeWeights(proj_ALL) )
 
-p22 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markerGenes2,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Harmony",  imputeWeights= getImputeWeights(proj_ALL) )
+p 
+dev.off () 
 
-
-p33 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markerGenes3,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Harmony",  imputeWeights= getImputeWeights(proj_ALL) )
-
-p44 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markerGenes4,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Harmony",  imputeWeights= getImputeWeights(proj_ALL) )
-
-
-p55 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markerGenes5,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Harmony",  imputeWeights= getImputeWeights(proj_ALL) )
-
-p1 <- lapply(p11, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features1.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p1))
-dev.off()
-
-
-p2 <- lapply(p22, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features2.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p2))
-dev.off()
-
-
-p3 <- lapply(p33, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features3.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p3))
-dev.off()
-
-
-p4 <- lapply(p44, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features4.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p4))
-dev.off()
-
-p5 <- lapply(p55, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features5.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p5))
-dev.off()
 
 
 #-----------------------------------
