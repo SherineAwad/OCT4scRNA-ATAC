@@ -373,7 +373,8 @@ ArchRProj = proj_ALL,
 useMatrix = "GeneExpressionMatrix",
 groupBy = "Clusters_Combined",
 )
-gexHeatmap <- markerHeatmap(
+gexHeatmap <- plotMarkerHeatmap(
+cutOff = "FDR <= 0.1 & Log2FC >= 0.5",
 seMarker = features,
 cutOff = "FDR <= 0.1 & Log2FC >= 0.5",
 transpose = TRUE
@@ -382,7 +383,19 @@ figure_name <- project_name
 figure_name <- paste(figure_name,"_gexHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
 draw(gexHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
-dev.off() 
+dev.off()
+#------------------------
+#MarkerGenes heatmap
+#------------------------
+
+subsetSE <- features[which(rowData(features)$name %in% markerGenes),]
+markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE)
+figure_name <- paste(figure_name,"_markerHeatmap.pdf", sep="")
+pdf(file =figure_name, width=12)
+draw(markersheatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
+
+
 #Browser Track
 #------------------------------
 figure_name <- project_name
