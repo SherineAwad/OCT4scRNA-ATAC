@@ -276,7 +276,7 @@ p <-plotEmbedding(
 ArchRProj = proj_ALL,
 colorBy = "GeneExpressionMatrix",
 name = markerGenes,
-quantCut = c(0.01, 0.99),
+quantCut = NULL,
 embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) ,log2Norm=TRUE)
 p
 dev.off() 
@@ -365,20 +365,35 @@ width = 20,
 height = 20
 )
  
-
-
-#------------------------------
+#-----------------------------
+#Gex heatmap
+#-----------------------------
+features <- getMarkerFeatures(
+ArchRProj = proj_ALL,
+useMatrix = "GeneExpressionMatrix",
+groupBy = "Clusters_Combined",
+)
+gexHeatmap <- markerHeatmap(
+seMarker = features,
+cutOff = "FDR <= 0.1 & Log2FC >= 0.5",
+transpose = TRUE
+)
+figure_name <- project_name
+figure_name <- paste(figure_name,"_gexHeatmap.pdf", sep="")
+pdf(file =figure_name, width=12)
+draw(gexHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off() 
 #Browser Track
 #------------------------------
 figure_name <- project_name
 figure_name <- paste(figure_name,"_browserTrack.pdf", sep="")
 pdf(file =figure_name, width=12)
-> p <- plotBrowserTrack(
+p <- plotBrowserTrack(
 ArchRProj = proj_ALL,
-groupBy = "Clusters",
+groupBy = "Clusters_Combined",
 geneSymbol = markerGenes,
-upstream = 50000,
-downstream = 50000
+upstream = 1000,
+downstream = 1000
 )
 dev.off()
 #-----------------------------------
