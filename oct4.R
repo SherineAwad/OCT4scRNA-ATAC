@@ -296,6 +296,28 @@ name = markers2,
 quantCut = c(0.01, 0.99),
 embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
 
+p3 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers3,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+
+p4 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers4,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+
+
+p5 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers5,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+
 #Check /nfs/turbo/umms-thahoang/sherine/mouseCutandTag/archr/OCT4RBPJ/Plots for plots 
 plotPDF(
 do.call(cowplot::plot_grid, c(list(ncol = 3), p1 ) ) ,
@@ -316,7 +338,7 @@ height = 20
 )
 
 plotPDF(
-do.call(cowplot::plot_grid, c(list(ncol = 3), p2 ) ) ,
+do.call(cowplot::plot_grid, c(list(ncol = 3), p3 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
 ArchRProj = proj_ALL,
 addDOC = FALSE,
@@ -324,6 +346,24 @@ width = 20,
 height = 20
 )
 
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p4 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_ALL,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p5 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_ALL,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
  
 
 
