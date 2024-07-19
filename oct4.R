@@ -306,108 +306,26 @@ width = 20,
 height = 20
 )
 
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p1 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_ALL,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
 
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p2 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_ALL,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
 
  
 
-p22 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markers2,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
-
-p2 <- lapply(p22, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features2.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p2))
-dev.off()
-
-
-p33 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markers3,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
-
-p3 <- lapply(p33, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features3.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p3))
-dev.off()
-
-
-p44 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markers4,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
-
-p4 <- lapply(p44, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features4.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p4))
-dev.off()
-
-
-p55 <-plotEmbedding(
-ArchRProj = proj_ALL,
-colorBy = "GeneExpressionMatrix",
-name = markers5,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
-
-p5 <- lapply(p55, function(x){
-    x + guides(color = FALSE, fill = FALSE) +
-    theme_ArchR(baseSize = 6.5) +
-    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-    theme(
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()
-    )
-})
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features5.pdf", sep="")
-pdf(file =figure_name, width=12)
-do.call(cowplot::plot_grid, c(list(ncol = 3),p5))
-dev.off()
 
 #------------------------------
 #Browser Track
