@@ -10,14 +10,9 @@ library(EnsDb.Mmusculus.v79)
 library(BSgenome.Mmusculus.UCSC.mm10)
 
 setwd("/nfs/turbo/umms-thahoang/sherine/mouseCutandTag/archr")
-#addArchRThreads(threads = 32) 
-
+addArchRThreads(threads = 4) 
 addArchRGenome("mm10")
-
-project_name ="OCT4"
-proj_ALL <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRUE)
-
-
+project_name ="OCT4RBPJ"
 atacFiles <- c("Control_mCherry" = "Control_mCherry_NMDA_atac_fragments.tsv.gz", "Control_Oct4" = "Control_Oct4_NMDA_atac_fragments.tsv.gz", "Rbpj_mCherry" = "Rbpj_mCherry_NMDA_atac_fragments.tsv.gz", "Rbpj_Oct4" = "Rbpj_Oct4_NMDA_atac_fragments.tsv.gz")
 
 rnaFiles <- c("Control_mCherry" = "Control_mCherry_NMDA_filtered_feature_bc_matrix.h5", "Control_Oct4" = "Control_Oct4_NMDA_filtered_feature_bc_matrix.h5", "Rbpj_mCherry" = "Rbpj_mCherry_NMDA_filtered_feature_bc_matrix.h5", "Rbpj_Oct4" = "Rbpj_Oct4_NMDA_filtered_feature_bc_matrix.h5")
@@ -39,7 +34,7 @@ ArrowFiles <- createArrowFiles(
 #######
 #######
 ArrowFiles <- c("Control_mCherry.arrow","Control_Oct4.arrow","Rbpj_mCherry.arrow","Rbpj_Oct4.arrow")
-project_ALL <- ArchRProject(ArrowFiles = ArrowFiles, outputDirectory = "OCT4andRBPJ", copyArrows = FALSE)
+project_ALL <- ArchRProject(ArrowFiles = ArrowFiles, outputDirectory = "OCT4RBPJ", copyArrows = FALSE)
 #need to check indeces of ArrowFiles
 proj_A <- ArchRProject(ArrowFiles[1], outputDirectory = "proj_A", copyArrows = FALSE)
 proj_B <- ArchRProject(ArrowFiles[2], outputDirectory = "proj_B", copyArrows = FALSE)
@@ -90,12 +85,16 @@ proj_D = proj_D[k]
 seRNAcombined<-cbind(assay(seRNA_A), assay(seRNA_B),assay(seRNA_C), assay(seRNA_D))
 seRNA_all<-SummarizedExperiment(assays=list(counts=seRNAcombined), rowRanges= rowRanges(seRNA_A))
 
-project_ALL <- ArchRProject(ArrowFiles = ArrowFiles, outputDirectory = "OCT4andRBPJ", copyArrows = FALSE)
+project_ALL <- ArchRProject(ArrowFiles = ArrowFiles, outputDirectory = "OCT4RBPJ", copyArrows = FALSE)
 proj_ALL <-addGeneExpressionMatrix(input=project_ALL, seRNA=seRNA_all)
 
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
+
+proj_ALL <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRUE)
 
 figure_name <- project_name
 figure_name <- paste(figure_name,"_QC.pdf", sep="")
+pdf(file =figure_name, width=12)
 p1 <- plotGroups(
     ArchRProj = proj_ALL, 
     groupBy = "Sample", 
@@ -116,20 +115,10 @@ p2 <- plotGroups(
     addBoxPlot = TRUE
    )
 
-p3 <- plotGroups(
-    ArchRProj = proj_ALL,
-    groupBy = "Clusters_Combined",
-    colorBy = "cellColData",
-    name = "Gex_nUMI",
-    plotAs = "violin",
-    alpha = 0.4,
-    addBoxPlot = TRUE
-   )
 
 p1
 p2
 dev.off ()
-
 
 #Before Filtering
 table(proj_ALL$Sample)
@@ -180,22 +169,13 @@ proj_ALL <- addIterativeLSI(
     name = "LSI_RNA"
 )
 
-
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 
 #-----------------------------------
 proj_ALL <- addCombinedDims(proj_ALL, reducedDims = c("LSI_ATAC", "LSI_RNA"), name =  "LSI_Combined")
-
 proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_ATAC", name = "UMAP_ATAC", minDist = 0.8, force = TRUE)
 proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_RNA", name = "UMAP_RNA", minDist = 0.8, force = TRUE)
 proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_Combined", name = "UMAP_Combined", minDist = 0.8, force = TRUE)
-
-#-----------------------------
-#Correct for batch effect 
-#------------------------------
-proj_ALL <-addHarmony(proj_ALL, reducedDims = "LSI_Combined", name = "Harmony", groupBy = "Sample")
-proj_ALL <- addUMAP(proj_ALL, reducedDims = "Harmony", name = "UMAP_Harmony", nNeighbors = 30, minDist = 0.5, metric = "cosine")
-
-
 #-----------------------------
 #Add Clusters
 #----------------------------
@@ -204,9 +184,8 @@ proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_RNA", name = "Clusters_RNA"
 proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_Combined", name = "Clusters_Combined", resolution = 0.6, force = TRUE)
 
 figure_name <- project_name
-figure_name <- paste(figure_name,"_ClustersQC.pdf", sep="")
+figure_name <- paste(figure_name,"_perClustersnUMI.pdf", sep="")
 pdf(file =figure_name, width=12)
-
 p <- plotGroups(
     ArchRProj = proj_ALL,
     groupBy = "Clusters_Combined",
@@ -217,13 +196,14 @@ p <- plotGroups(
     addBoxPlot = TRUE
    )
 p
-dev.off(
-saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4andRBPJ", load = FALSE)
+dev.off()
+
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 #----------------------------------
 
 #----------------------------------
 figure_name <- project_name
-figure_name <- paste(figure_name,"_clusters.pdf", sep="")
+figure_name <- paste(figure_name,"_clustersUMAP.pdf", sep="")
 pdf(file =figure_name, width=12)
 p1 <- plotEmbedding(proj_ALL, name = "Clusters_ATAC", embedding = "UMAP_ATAC", size = 1.5, labelAsFactors=F, labelMeans=F)
 p2 <- plotEmbedding(proj_ALL, name = "Clusters_RNA", embedding = "UMAP_RNA", size = 1.5, labelAsFactors=F, labelMeans=F)
@@ -241,25 +221,16 @@ p <- lapply(list(p1,p2,p3), function(x){
     )
 })
 do.call(cowplot::plot_grid, c(list(ncol = 3),p))
-plotPDF(p1, p2, p3, name = "UMAP-scATAC-scRNA-Combined", addDOC = FALSE)
 dev.off()
 
 figure_name <- project_name
-figure_name <- paste(figure_name,"_SampleUMAP.pdf", sep="")
+figure_name <- paste(figure_name,"_SamplesUMAP.pdf", sep="")
 pdf(file =figure_name, width=12)
 p1 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Sample", embedding = "UMAP_Combined")
 p2 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Combined")
 ggAlignPlots(p1, p2, type = "h")
 dev.off()
 
-
-figure_name <- project_name
-figure_name <- paste(figure_name,"_HarmonyUMAP.pdf", sep="")
-pdf(file =figure_name, width=12)
-p1 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Sample", embedding = "UMAP_Harmony")
-p2 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Harmony")
-ggAlignPlots(p1, p2, type = "h")
-dev.off()
 
 #------------------------
 #Plotting ATAC Heatmap 
@@ -281,30 +252,177 @@ dev.off()
 #-------------------------------------
 #Adding Impute Weights using Harmony
 #-------------------------------------
-proj_ALL <- addImputeWeights(ArchRProj = proj_ALL,reducedDims = "Harmony", scaleDims=TRUE, corCutOff =0.5)
-
+proj_ALL <- addImputeWeights(ArchRProj = proj_ALL,reducedDims = "LSI_Combined") # scaleDims=TRUE, corCutOff =0.5)
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 #-------------------------------------
 #Plotting Gene Expressions 
 #-------------------------------------
 
 markerGenes <- c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms", "Lhx1","Csf1r", "Ccr2", "Pax2","Kcnj8","Rlbp1", "Ascl1", "Otx2", "Olig2", "Crx","Neurog2","Rpe65", "Acta2", "Tie1", "Klf4","Grm6","Grik1","Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4","Gnat1", "Pcp2", "Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2", "Csf1r")
 
+
+markers1 <- c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms", "Lhx1")
+markers2 <- c("Kcnj8","Rlbp1", "Ascl1", "Otx2", "Olig2", "Crx","Neurog2","Rpe65", "Acta2") 
+markers3 <- c("Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4","Gnat1", "Pcp2")
+markers4 <- c("Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2") 
+markers5 <- c("Csf1r", "Ccr2", "Pax2","Tie1", "Klf4","Grm6") 
+
 figure_name <- project_name
 figure_name <- paste(figure_name,"_features.pdf", sep="")
 pdf(file =figure_name, width=12)
 
+#Plotting all Genes one gene per page 
 p <-plotEmbedding(
 ArchRProj = proj_ALL,
 colorBy = "GeneExpressionMatrix",
 name = markerGenes,
 quantCut = c(0.01, 0.99),
-embedding = "UMAP_Harmony",  imputeWeights= getImputeWeights(proj_ALL) )
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) ,log2Norm=TRUE)
+p
+dev.off() 
 
-p 
-dev.off () 
+#Plotting group of genes per page 
+p1 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers1,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+
+p2 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers2,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+
+#Check /nfs/turbo/umms-thahoang/sherine/mouseCutandTag/archr/OCT4RBPJ/Plots for plots 
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p1 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_ALL,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
 
 
 
+ 
+
+p22 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers2,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
+
+p2 <- lapply(p22, function(x){
+    x + guides(color = FALSE, fill = FALSE) +
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
+    )
+})
+figure_name <- project_name
+figure_name <- paste(figure_name,"_features2.pdf", sep="")
+pdf(file =figure_name, width=12)
+do.call(cowplot::plot_grid, c(list(ncol = 3),p2))
+dev.off()
+
+
+p33 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers3,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
+
+p3 <- lapply(p33, function(x){
+    x + guides(color = FALSE, fill = FALSE) +
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
+    )
+})
+figure_name <- project_name
+figure_name <- paste(figure_name,"_features3.pdf", sep="")
+pdf(file =figure_name, width=12)
+do.call(cowplot::plot_grid, c(list(ncol = 3),p3))
+dev.off()
+
+
+p44 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers4,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
+
+p4 <- lapply(p44, function(x){
+    x + guides(color = FALSE, fill = FALSE) +
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
+    )
+})
+figure_name <- project_name
+figure_name <- paste(figure_name,"_features4.pdf", sep="")
+pdf(file =figure_name, width=12)
+do.call(cowplot::plot_grid, c(list(ncol = 3),p4))
+dev.off()
+
+
+p55 <-plotEmbedding(
+ArchRProj = proj_ALL,
+colorBy = "GeneExpressionMatrix",
+name = markers5,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) )
+
+p5 <- lapply(p55, function(x){
+    x + guides(color = FALSE, fill = FALSE) +
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "cm")) +
+    theme(
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
+    )
+})
+figure_name <- project_name
+figure_name <- paste(figure_name,"_features5.pdf", sep="")
+pdf(file =figure_name, width=12)
+do.call(cowplot::plot_grid, c(list(ncol = 3),p5))
+dev.off()
+
+#------------------------------
+#Browser Track
+#------------------------------
+figure_name <- project_name
+figure_name <- paste(figure_name,"_browserTrack.pdf", sep="")
+pdf(file =figure_name, width=12)
+> p <- plotBrowserTrack(
+ArchRProj = proj_ALL,
+groupBy = "Clusters",
+geneSymbol = markerGenes,
+upstream = 50000,
+downstream = 50000
+)
+dev.off()
 #-----------------------------------
 #Calling Peaks 
 #-----------------------------------
@@ -367,7 +485,7 @@ peakMatrix <- getAvailableMatrices(proj_ALL)
 peakMatrix
 
 
-saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4andRBPJ", load = FALSE)
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 
 #----------------------
 #Calling Motifs 
@@ -443,11 +561,11 @@ ggDo <- ggplot(df, aes(rank, mlog10Padj, color = mlog10Padj)) +
 ggDo
 dev.off()
 
-saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4andRBPJ", load = FALSE)
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 
 
 
 clusters <- c("C3", "C4", "C5", "C6", "C8", "C9", "C10","C12", "C13", "C14", "C15")
 proj_subset = subsetArchRProject(proj_ALL,proj_ALL$cellNames[proj_ALL$Clusters_Combined %in% clusters] , outputDirectory = "OCT4_subset" ,force =TRUE,dropCells = TRUE)
 
-
+}
