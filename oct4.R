@@ -329,7 +329,7 @@ height = 20
 )
 
 plotPDF(
-do.call(cowplot::plot_grid, c(list(ncol = 3), p1 ) ) ,
+do.call(cowplot::plot_grid, c(list(ncol = 3), p2 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
 ArchRProj = proj_ALL,
 addDOC = FALSE,
