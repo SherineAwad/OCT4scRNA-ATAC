@@ -44,20 +44,112 @@ saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load =
 #-------------------------------------
 #Plotting Gene Expressions 
 #-------------------------------------
-figure_name <- project_name
-figure_name <- paste(figure_name,"_features.pdf", sep="")
 markerGenes <- c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms", "Lhx1","Csf1r", "Ccr2", "Pax2","Kcnj8","Rlbp1", "Ascl1", "Otx2", "Olig2", "Crx","Neurog2","Rpe65", "Acta2", "Tie1", "Klf4","Grm6","Grik1","Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4","Gnat1", "Pcp2", "Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2", "Csf1r")
 
 
+markers1 <- c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms", "Lhx1")
+markers2 <- c("Kcnj8","Rlbp1", "Ascl1", "Otx2", "Olig2", "Crx","Neurog2","Rpe65", "Acta2")
+markers3 <- c("Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4","Gnat1", "Pcp2")
+markers4 <- c("Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2")
+markers5 <- c("Csf1r", "Ccr2", "Pax2","Tie1", "Klf4","Grm6")
+
+figure_name <- project_name
+figure_name <- paste(figure_name,"_features.pdf", sep="")
+pdf(file =figure_name, width=12)
+
+#Plotting all Genes one gene per page
 p <-plotEmbedding(
 ArchRProj = proj_subset,
 colorBy = "GeneExpressionMatrix",
 name = markerGenes,
-quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset),log2Norm=TRUE)
+quantCut = NULL,
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset) ,log2Norm=TRUE)
 p
-dev.off() 
+dev.off()
 
+#Plotting group of genes per page
+p1 <-plotEmbedding(
+ArchRProj = proj_subset,
+colorBy = "GeneExpressionMatrix",
+name = markers1,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset), log2Norm=TRUE)
+
+p2 <-plotEmbedding(
+ArchRProj = proj_subset,
+colorBy = "GeneExpressionMatrix",
+name = markers2,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset), log2Norm=TRUE)
+
+p3 <-plotEmbedding(
+ArchRProj = proj_subset,
+colorBy = "GeneExpressionMatrix",
+name = markers3,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset), log2Norm=TRUE)
+
+p4 <-plotEmbedding(
+ArchRProj = proj_subset,
+colorBy = "GeneExpressionMatrix",
+name = markers4,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset), log2Norm=TRUE)
+
+
+p5 <-plotEmbedding(
+ArchRProj = proj_subset,
+colorBy = "GeneExpressionMatrix",
+name = markers5,
+quantCut = c(0.01, 0.99),
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_subset), log2Norm=TRUE)
+
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p1 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_subset,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p2 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_subset,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p3 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_subset,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
+
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p4 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_subset,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
+
+plotPDF(
+do.call(cowplot::plot_grid, c(list(ncol = 3), p5 ) ) ,
+name = "OCT4RBPJ_features1.pdf",
+ArchRProj = proj_subset,
+addDOC = FALSE,
+width = 20,
+height = 20
+)
 
 
 #-----------------------------
@@ -130,10 +222,10 @@ write.csv(df, "genes_RBPJ.csv")
 #Calling Peaks 
 #-----------------------------------
 
-proj_subset <- addGroupCoverages(ArchRProj = proj_subset, groupBy = "Clusters_Combined")
-proj_subset <- addReproduciblePeakSet(ArchRProj = proj_subset, groupBy = "Clusters_Combined", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2")
+proj_subset <- addGroupCoverages(ArchRProj = proj_subset, groupBy = "Sample")
+proj_subset <- addReproduciblePeakSet(ArchRProj = proj_subset, groupBy = "Sample", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2")
 proj_subset <- addPeakMatrix(ArchRProj = proj_subset)
-proj_subset <- addPeak2GeneLinks(ArchRProj = proj_subset, reducedDims = "LSI_Combined", useMatrix = "GeneExpressionMatrix")
+proj_subset <- addPeak2GeneLinks(ArchRProj = proj_subset, reducedDims = "LSI_ATAC", useMatrix = "GeneExpressionMatrix")
 p2g <- getPeak2GeneLinks(ArchRProj = proj_subset)
 
 #--------------
