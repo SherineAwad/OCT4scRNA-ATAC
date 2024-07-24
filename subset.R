@@ -108,13 +108,13 @@ groupBy = "Sample",useGroups = "Rbpj_Oct4",
 testMethod = "wilcoxon"
 )
 
-df <-data.frame(genes=rowData(featuresControls), Log2FC=assays(featuresControls)$Log2FC, FDR=assays(featuresControls)$FDR, Mean= assays(featuresControls)$Mean, 
+df <- data.frame(genes=rowData(featuresControls), Log2FC=assays(featuresControls)$Log2FC, FDR=assays(featuresControls)$FDR, Mean= assays(featuresControls)$Mean, 
 MeanDiff=assays(featuresControls)$MeanDiff, MeanBGD=assays(featuresControls)$MeanBGD, Pval=assays(featuresControls)$Pval)
 
 write.csv(df, "genes_Controls.csv") 
 
 
-df <-data.frame(genes=rowData(featuresRBPJ), Log2FC=assays(featuresRBPJ)$Log2FC, FDR=assays(featuresRBPJ)$FDR, Mean= assays(featuresRBPJ)$Mean,
+df <- data.frame(genes=rowData(featuresRBPJ), Log2FC=assays(featuresRBPJ)$Log2FC, FDR=assays(featuresRBPJ)$FDR, Mean= assays(featuresRBPJ)$Mean,
 MeanDiff=assays(featuresRBPJ)$MeanDiff, MeanBGD=assays(featuresRBPJ)$MeanBGD, Pval=assays(featuresRBPJ)$Pval)
 
 
@@ -157,14 +157,10 @@ bias = c("TSSEnrichment", "log10(nFrags)"),
 testMethod = "wilcoxon"
 )
 
-
-PeaksControls
-PeaksControls$C20 
-
 heatmapPeaksControls <- plotMarkerHeatmap(
-  seMarker = PeaksControls,
+  seMarker = peaksControls,
   cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.5",
-  transpose = TRUE
+  transpose = TRUE,plotLog2FC = TRUE
 )
 
 figure_name <- project_name
@@ -175,9 +171,9 @@ dev.off()
 
 
 heatmapPeaksRBPJ <- plotMarkerHeatmap(
-  seMarker = PeaksRBPJ,
-  cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.5",
-  transpose = TRUE
+  seMarker = peaksRBPJ,
+  cutOff = "FDR <= 0.5 & abs(Log2FC >= 0.5)",
+  transpose = TRUE,plotLog2FC = TRUE
 )
 
 figure_name <- project_name
