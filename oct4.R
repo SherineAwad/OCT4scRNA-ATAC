@@ -175,13 +175,14 @@ saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALS
 proj_ALL <- addCombinedDims(proj_ALL, reducedDims = c("LSI_ATAC", "LSI_RNA"), name =  "LSI_Combined")
 proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_ATAC", name = "UMAP_ATAC", minDist = 0.8, force = TRUE)
 proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_RNA", name = "UMAP_RNA", minDist = 0.8, force = TRUE)
-proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_Combined", name = "UMAP_Combined", minDist = 0.8, force = TRUE)
+proj_ALL <- addUMAP(proj_ALL, reducedDims = "LSI_Combined", dimsToUse = 1:20, name = "UMAP_Combined", minDist = 0.4, force = TRUE)
+
 #-----------------------------
 #Add Clusters
 #----------------------------
 proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_ATAC", name = "Clusters_ATAC", resolution = 0.6, force = TRUE)
 proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_RNA", name = "Clusters_RNA", resolution = 0.6, force = TRUE)
-proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_Combined", name = "Clusters_Combined", resolution = 0.6, force = TRUE)
+proj_ALL <- addClusters(proj_ALL, reducedDims = "LSI_Combined",dimsToUse = 1:20, name = "Clusters_Combined", resolution = 1.2, force = TRUE)
 
 figure_name <- project_name
 figure_name <- paste(figure_name,"_perClustersnUMI.pdf", sep="")
@@ -229,12 +230,29 @@ p2 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Clust
 ggAlignPlots(p1, p2, type = "h")
 dev.off()
 
+#Remove some clusters 
+
+clusters <- c("C2", "C3","C4", "C5", "C6", "C8", "C9", "C10", "C11", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24")
+proj_Clean = subsetArchRProject(proj_ALL,proj_ALL$cellNames[proj_ALL$Clusters_Combined %in% clusters] , outputDirectory = "OCT4_Clean" ,force =TRUE,dropCells = TRUE)
+
+proj_Clean <- addUMAP(proj_Clean, reducedDims = "LSI_Combined", dimsToUse = 1:20, name = "UMAP_Combined", minDist = 0.4, force = TRUE)
+proj_Clean <- addClusters(proj_Clean, reducedDims = "LSI_Combined",dimsToUse = 1:20, name = "Clusters_Combined", resolution = 1.2, force = TRUE)
+proj_Clean <- addImputeWeights(ArchRProj = proj_Clean,reducedDims = "LSI_Combined") #, scaleDims=TRUE, corCutOff =0.5)
+
+figure_name <- project_name
+figure_name <- paste(figure_name,"_CleanSamplesUMAP.pdf", sep="")
+pdf(file =figure_name, width=12)
+p1 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Sample", embedding = "UMAP_Combined")
+p2 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Combined")
+ggAlignPlots(p1, p2, type = "h")
+dev.off()
+
 
 #------------------------
 #Plotting ATAC Heatmap 
 #-------------------------
 #-------------------------------
-cM_atac_rna <- confusionMatrix(paste0(proj_ALL$Clusters_ATAC), paste0(proj_ALL$Clusters_RNA))
+cM_atac_rna <- confusionMatrix(paste0(proj_Clean$Clusters_ATAC), paste0(proj_Clean$Clusters_RNA))
 cM_atac_rna <- cM_atac_rna / Matrix::rowSums(cM_atac_rna)
 
 figure_name <- project_name
@@ -250,8 +268,8 @@ dev.off()
 #-------------------------------------
 #Adding Impute Weights using Harmony
 #-------------------------------------
-proj_ALL <- addImputeWeights(ArchRProj = proj_ALL,reducedDims = "LSI_Combined") # scaleDims=TRUE, corCutOff =0.5)
-saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
+proj_Clean <- addImputeWeights(ArchRProj = proj_Clean,reducedDims = "LSI_Combined") # scaleDims=TRUE, corCutOff =0.5)
+saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
 #-------------------------------------
 #Plotting Gene Expressions 
 #-------------------------------------
@@ -271,56 +289,56 @@ pdf(file =figure_name, width=12)
 
 #Plotting all Genes one gene per page 
 p <-plotEmbedding(
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 colorBy = "GeneExpressionMatrix",
 name = markerGenes,
 quantCut = NULL,
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL) ,log2Norm=TRUE)
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_Clean) ,log2Norm=TRUE)
 p
 dev.off() 
 
 #Plotting group of genes per page 
 p1 <-plotEmbedding(
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 colorBy = "GeneExpressionMatrix",
 name = markers1,
 quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_Clean), log2Norm=TRUE)
 
 p2 <-plotEmbedding(
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 colorBy = "GeneExpressionMatrix",
 name = markers2,
 quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_Clean), log2Norm=TRUE)
 
 p3 <-plotEmbedding(
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 colorBy = "GeneExpressionMatrix",
 name = markers3,
 quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_Clean), log2Norm=TRUE)
 
 p4 <-plotEmbedding(
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 colorBy = "GeneExpressionMatrix",
 name = markers4,
 quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_Clean), log2Norm=TRUE)
 
 
 p5 <-plotEmbedding(
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 colorBy = "GeneExpressionMatrix",
 name = markers5,
 quantCut = c(0.01, 0.99),
-embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_ALL), log2Norm=TRUE)
+embedding = "UMAP_Combined",  imputeWeights= getImputeWeights(proj_Clean), log2Norm=TRUE)
 
 #Check /nfs/turbo/umms-thahoang/sherine/mouseCutandTag/archr/OCT4RBPJ/Plots for plots 
 plotPDF(
 do.call(cowplot::plot_grid, c(list(ncol = 3), p1 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 addDOC = FALSE,
 width = 20,
 height = 20
@@ -329,7 +347,7 @@ height = 20
 plotPDF(
 do.call(cowplot::plot_grid, c(list(ncol = 3), p2 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 addDOC = FALSE,
 width = 20,
 height = 20
@@ -338,7 +356,7 @@ height = 20
 plotPDF(
 do.call(cowplot::plot_grid, c(list(ncol = 3), p3 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 addDOC = FALSE,
 width = 20,
 height = 20
@@ -348,7 +366,7 @@ height = 20
 plotPDF(
 do.call(cowplot::plot_grid, c(list(ncol = 3), p4 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 addDOC = FALSE,
 width = 20,
 height = 20
@@ -357,15 +375,57 @@ height = 20
 plotPDF(
 do.call(cowplot::plot_grid, c(list(ncol = 3), p5 ) ) ,
 name = "OCT4RBPJ_features1.pdf",
-ArchRProj = proj_ALL,
+ArchRProj = proj_Clean,
 addDOC = FALSE,
 width = 20,
 height = 20
 )
  
 
-saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
+saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
 
-clusters <- c("C3", "C4", "C5", "C6", "C8", "C9", "C10","C12", "C13", "C14", "C15")
-proj_subset = subsetArchRProject(proj_ALL,proj_ALL$cellNames[proj_ALL$Clusters_Combined %in% clusters] , outputDirectory = "OCT4_subset" ,force =TRUE,dropCells = TRUE)
+
+Newlabel <- c(
+"C1" = "Cone",
+"C2" ="Rod",
+"C3"= "Cone",
+"C4"="Bipolar",
+"C5"="Bipolar",
+"C6"="Amacrine",
+"C7"= "KO MG",
+"C8"="KO MG",
+"C9"="WT MG",
+"C10"="WT MG",
+"C11"="WT MG",
+"C12"="WT MG",
+"C13"="WT MG",
+"C14"="KO MG",
+"C15"="WT MG",
+"C16"="WT MG",
+"C17"="KO MG",
+"C18"="MGPC",
+"C19"="WT MG",
+"C20"="KO MG",
+"C21"="KO MG",
+"C22"="KO MG")
+
+
+proj_Clean$Celltype <-  mapLabels(proj_Clean$Clusters_Combined, newLabels = Newlabel)
+
+
+figure_name <- project_name
+figure_name <- paste(figure_name,"_NCleanSamplesUMAP.pdf", sep="")
+pdf(file =figure_name, width=12)
+p1 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Sample", embedding = "UMAP_Combined")
+p2 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Combined")
+p3 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Celltype", embedding = "UMAP_Combined")
+ggAlignPlots(p1, p2,p3, type = "h")
+dev.off()
+
+
+saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
+
+
+clusters <- c("C4", "C7")
+proj_subset = subsetArchRProject(proj_Clean,proj_Clean$cellNames[proj_Clean$Clusters_Combined %in% clusters] , outputDirectory = "OCT4subset" ,force =TRUE,dropCells = TRUE)
 
