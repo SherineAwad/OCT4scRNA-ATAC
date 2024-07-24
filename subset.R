@@ -111,11 +111,15 @@ testMethod = "wilcoxon"
 df <- data.frame(genes=rowData(featuresControls), Log2FC=assays(featuresControls)$Log2FC, FDR=assays(featuresControls)$FDR, Mean= assays(featuresControls)$Mean, 
 MeanDiff=assays(featuresControls)$MeanDiff, MeanBGD=assays(featuresControls)$MeanBGD, Pval=assays(featuresControls)$Pval)
 
+
+colnames(df) <- c("genes.seqnames", "genes.idx", "genes.start", "genes.end", "genes.name", "genes.strand", "Log2FC","FDR", "Mean", "MeanDiff","MeanBGD", "Pvalue")
 write.csv(df, "genes_Controls.csv") 
 
 
 df <- data.frame(genes=rowData(featuresRBPJ), Log2FC=assays(featuresRBPJ)$Log2FC, FDR=assays(featuresRBPJ)$FDR, Mean= assays(featuresRBPJ)$Mean,
 MeanDiff=assays(featuresRBPJ)$MeanDiff, MeanBGD=assays(featuresRBPJ)$MeanBGD, Pval=assays(featuresRBPJ)$Pval)
+
+colnames(df) <- c("genes.seqnames", "genes.idx", "genes.start", "genes.end", "genes.name", "genes.strand", "Log2FC","FDR", "Mean", "MeanDiff","MeanBGD", "Pvalue")
 
 
 write.csv(df, "genes_RBPJ.csv")
@@ -189,7 +193,7 @@ p <- plotBrowserTrack(
     ArchRProj = proj_subset,
     groupBy = "Clusters_Combined",
     geneSymbol = c("Pou5f1"),
-    features =  getMarkers(markersPeaks, cutOff = "FDR <= 0.01 & Log2FC >= 4", returnGR = TRUE),
+    features =  getMarkers(markersPeaks, cutOff = "FDR <= 0.5 & abs(Log2FC >=0.5", returnGR = TRUE),
     upstream = 10000,
     downstream = 10000
 )
