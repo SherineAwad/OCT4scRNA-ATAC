@@ -205,7 +205,7 @@ MeanDiff=assays(featuresControls)$MeanDiff, MeanBGD=assays(featuresControls)$Mea
 
 
 colnames(df) <- c("genes.seqnames", "genes.idx", "genes.start", "genes.end", "genes.name", "genes.strand", "Log2FC","FDR", "Mean", "MeanDiff","MeanBGD", "Pvalue")
-write.csv(df, "genes_Controls.csv") 
+write.csv(df, "genes_Controls.csv",row.names=FALSE)
 
 
 df <- data.frame(genes=rowData(featuresRBPJ), Log2FC=assays(featuresRBPJ)$Log2FC, FDR=assays(featuresRBPJ)$FDR, Mean= assays(featuresRBPJ)$Mean,
@@ -214,8 +214,7 @@ MeanDiff=assays(featuresRBPJ)$MeanDiff, MeanBGD=assays(featuresRBPJ)$MeanBGD, Pv
 colnames(df) <- c("genes.seqnames", "genes.idx", "genes.start", "genes.end", "genes.name", "genes.strand", "Log2FC","FDR", "Mean", "MeanDiff","MeanBGD", "Pvalue")
 
 
-write.csv(df, "genes_RBPJ.csv")
-
+write.csv(df, "genes_RBPJ.csv",row.names=FALSE)
 #--------------------------------
 #---------------------------------
 #-----------------------------------
@@ -225,9 +224,11 @@ write.csv(df, "genes_RBPJ.csv")
 proj_subset <- addGroupCoverages(ArchRProj = proj_subset, groupBy = "Sample")
 proj_subset <- addReproduciblePeakSet(ArchRProj = proj_subset, groupBy = "Sample", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2")
 proj_subset <- addPeakMatrix(ArchRProj = proj_subset)
-proj_subset <- addPeak2GeneLinks(ArchRProj = proj_subset, reducedDims = "LSI_ATAC", useMatrix = "GeneExpressionMatrix")
+proj_subset <- addPeak2GeneLinks(ArchRProj = proj_subset, reducedDims = "LSI_Combined", useMatrix = "GeneExpressionMatrix")
 p2g <- getPeak2GeneLinks(ArchRProj = proj_subset)
 
+
+saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load = FALSE
 #--------------
 #Plotting Peaks 
 #--------------
@@ -252,6 +253,23 @@ bgdGroups = "Control_mCherry",
 bias = c("TSSEnrichment", "log10(nFrags)"),
 testMethod = "wilcoxon"
 )
+
+
+peaksControlsGR <- getMarkers(
+  seMarker = peaksControls,
+  cutOff = "FDR >= 0",
+  n = NULL,
+  returnGR = TRUE
+)
+write.csv(peaksControlsGR, "peaksControlspersample.csv",row.names=FALSE)
+
+peaksRBPJGR <- getMarkers(
+  seMarker = peaksRBPJ,
+  cutOff = "FDR >= 0",
+  n = NULL,
+  returnGR = TRUE
+)
+write.csv(peaksRBPJGR, "peaksRBPJpersample.csv",row.names=FALSE) 
 
 heatmapPeaksControls <- plotMarkerHeatmap(
   seMarker = peaksControls,
@@ -278,6 +296,7 @@ pdf(file =figure_name, width=12)
 draw(heatmapPeaksRBPJ, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
 
+#----------------------------
 #---------------------------
 #Plot specific genes' peaks
 #---------------------------
