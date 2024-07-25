@@ -16,7 +16,7 @@ df <- readfile <- read.csv(peaksfile, head = TRUE, sep=",")
 
 newdf = df[c("seqnames", "start", "end")]
 
-mybed <- makeGRangesFromDataFrame(newdf,ignore.strand=FALSE, starts.in.df.are.0based=TRUE)
+mybed <- makeGRangesFromDataFrame(newdf,ignore.strand=TRUE, starts.in.df.are.0based=TRUE)
 
 rtracklayer::export.bed(mybed, bedfile, "bed")
 
