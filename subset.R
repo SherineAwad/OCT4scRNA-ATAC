@@ -228,7 +228,7 @@ proj_subset <- addPeak2GeneLinks(ArchRProj = proj_subset, reducedDims = "LSI_Com
 p2g <- getPeak2GeneLinks(ArchRProj = proj_subset)
 
 
-saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load = FALSE
+saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load = FALSE)
 #--------------
 #Plotting Peaks 
 #--------------
