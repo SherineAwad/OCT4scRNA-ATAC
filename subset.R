@@ -221,8 +221,8 @@ write.csv(df, "genes_RBPJ.csv",row.names=FALSE)
 #Calling Peaks 
 #-----------------------------------
 
-proj_subset <- addGroupCoverages(ArchRProj = proj_subset, groupBy = "Sample")
-proj_subset <- addReproduciblePeakSet(ArchRProj = proj_subset, groupBy = "Sample", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2")
+proj_subset <- addGroupCoverages(ArchRProj = proj_subset, groupBy = "Celltype")
+proj_subset <- addReproduciblePeakSet(ArchRProj = proj_subset, groupBy = "Celltype", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2")
 proj_subset <- addPeakMatrix(ArchRProj = proj_subset)
 proj_subset <- addPeak2GeneLinks(ArchRProj = proj_subset, reducedDims = "LSI_Combined", useMatrix = "GeneExpressionMatrix")
 p2g <- getPeak2GeneLinks(ArchRProj = proj_subset)
@@ -237,7 +237,8 @@ saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load =
 peaksRBPJ <- getMarkerFeatures(
 ArchRProj = proj_subset,
 useMatrix = "PeakMatrix",
-groupBy = "Sample",useGroup = "Rbpj_Oct4",
+groupBy = "Sample",
+useGroup = "Rbpj_Oct4",
 bgdGroups = "Rbpj_mCherry",
 bias = c("TSSEnrichment", "log10(nFrags)"),
 testMethod = "wilcoxon"
@@ -248,7 +249,8 @@ testMethod = "wilcoxon"
 peaksControls <- getMarkerFeatures(
 ArchRProj = proj_subset,
 useMatrix = "PeakMatrix",
-groupBy = "Sample",useGroups = "Control_Oct4",
+groupBy = "Sample",
+useGroups = "Control_Oct4",
 bgdGroups = "Control_mCherry",
 bias = c("TSSEnrichment", "log10(nFrags)"),
 testMethod = "wilcoxon"
@@ -261,7 +263,7 @@ peaksControlsGR <- getMarkers(
   n = NULL,
   returnGR = TRUE
 )
-write.csv(peaksControlsGR, "peaksControlspersample.csv",row.names=FALSE)
+write.csv(peaksControlsGR, "peaksControlsCelltypeperSample.csv",row.names=FALSE)
 
 peaksRBPJGR <- getMarkers(
   seMarker = peaksRBPJ,
@@ -269,7 +271,7 @@ peaksRBPJGR <- getMarkers(
   n = NULL,
   returnGR = TRUE
 )
-write.csv(peaksRBPJGR, "peaksRBPJpersample.csv",row.names=FALSE) 
+write.csv(peaksRBPJGR, "peaksRBPJCelltypeperSample.csv",row.names=FALSE) 
 
 heatmapPeaksControls <- plotMarkerHeatmap(
   seMarker = peaksControls,
@@ -304,7 +306,7 @@ p <- plotBrowserTrack(
     ArchRProj = proj_subset,
     groupBy = "Clusters_Combined",
     geneSymbol = c("Pou5f1"),
-    features =  getMarkers(markersPeaks, cutOff = "FDR <= 0.5 & abs(Log2FC >=0.5", returnGR = TRUE),
+    features =  getMarkers(peaksControls, cutOff = "FDR <= 0.5 & abs(Log2FC >=0.5", returnGR = TRUE),
     upstream = 10000,
     downstream = 10000
 )
@@ -333,7 +335,7 @@ motifsDoControls <-peakAnnoEnrichment(
     seMarker = peaksControls,
     ArchRProj = proj_subset,
     peakAnnotation = "Motif",
-    cutOff = "FDR <= 0.5 & Log2FC >= -0.5",  )
+    cutOff = "FDR <= 0.5 & Log2FC <= -0.5")
 
 
 motifsUPRBPJ <- peakAnnoEnrichment(
@@ -347,55 +349,84 @@ motifsDoRBPJ <-peakAnnoEnrichment(
     seMarker = peaksRBPJ,
     ArchRProj = proj_subset,
     peakAnnotation = "Motif",
-    cutOff = "FDR <= 0.5 & Log2FC >= -0.5"  )
+    cutOff = "FDR <= 0.5 & Log2FC <= -0.5"  )
 
 
 dfUPControls <-data.frame(TF =rownames(motifsUPControls), mlog10Padj =assay(motifsUPControls)[,1])
 dfUPControls <- dfUPControls[order(dfUPControls$mlog10Padj, decreasing = TRUE),]
 dfUPControls$rank <-seq_len(nrow(dfUPControls))
-
-write.csv(dfUPControls, "dfUPControls.csv") 
+write.csv(dfUPControls, "SubsetdfUPControls.csv") 
 
 dfUPRBPJ <-data.frame(TF =rownames(motifsUPRBPJ), mlog10Padj =assay(motifsUPRBPJ)[,1])
 dfUPRBPJ <- dfUPRBPJ[order(dfUPRBPJ$mlog10Padj, decreasing = TRUE),]
 dfUPRBPJ$rank <-seq_len(nrow(dfUPRBPJ))
-write.csv(dfUPRBPJ, "dfUPRBPJ.csv") 
+write.csv(dfUPRBPJ, "SubsetdfUPRBPJ.csv") 
 
 
 dfDoControls <-data.frame(TF =rownames(motifsDoControls), mlog10Padj =assay(motifsDoControls)[,1])
 dfDoControls <- dfDoControls[order(dfDoControls$mlog10Padj, decreasing = TRUE),]
 dfDoControls$rank <-seq_len(nrow(dfDoControls))
-
-write.csv(dfDoControls, "dfDoControls.csv")
+write.csv(dfDoControls, "SubsetdfDoControls.csv")
 
 dfDoRBPJ <-data.frame(TF =rownames(motifsDoRBPJ), mlog10Padj =assay(motifsDoRBPJ)[,1])
 dfDoRBPJ <- dfDoRBPJ[order(dfDoRBPJ$mlog10Padj, decreasing = TRUE),]
 dfDoRBPJ$rank <-seq_len(nrow(dfDoRBPJ))
-write.csv(dfDoRBPJ, "dfDoRBPJ.csv")
+write.csv(dfDoRBPJ, "SubsetdfDoRBPJ.csv")
 
 
-heatmapUPControls <- plotEnrichHeatmap(motifsUPControls, n = 7, transpose = TRUE)
-figure_name =""
+heatmapUPControls <- plotEnrichHeatmap(motifsUPControls, n = 10, cutOff=2.0, transpose = TRUE)
+figure_name = project_name
 figure_name <- paste(figure_name,"motifsUPControls.pdf", sep="")
 pdf(file =figure_name, width=12)
 ComplexHeatmap::draw(heatmapUPControls, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
 
 
-heatmapUPRBPJ <- plotEnrichHeatmap(motifsUPRBPJ, n = 7, transpose = TRUE)
-figure_name =""
+
+heatmapDoControls <- plotEnrichHeatmap(motifsDoControls, n = 10, cutOff=2.0, transpose = TRUE)
+figure_name =project_name
+figure_name <- paste(figure_name,"motifsDoControls.pdf", sep="")
+pdf(file =figure_name, width=12)
+ComplexHeatmap::draw(heatmapDoControls, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
+
+
+figure_name =project_name
+figure_name <- paste(figure_name,"motifsUPandDoControls.pdf", sep="")
+pdf(file =figure_name, width=12)
+heatmapUPControls +heatmapDoControls
+dev.off() 
+
+
+heatmapUPRBPJ <- plotEnrichHeatmap(motifsUPRBPJ, n = 10, cutOff=2.0, transpose = TRUE)
+figure_name =project_name
 figure_name <- paste(figure_name,"motifsUPRBPJ.pdf", sep="")
 pdf(file =figure_name, width=12)
 ComplexHeatmap::draw(heatmapUPRBPJ, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
+
+heatmapDoRBPJ <- plotEnrichHeatmap(motifsDoRBPJ, n = 10, cutOff =2.0, transpose = TRUE)
+figure_name =project_name
+figure_name <- paste(figure_name,"motifsDoRBPJ.pdf", sep="")
+pdf(file =figure_name, width=12)
+ComplexHeatmap::draw(heatmapDoRBPJ, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
+
+figure_name =project_name
+figure_name <- paste(figure_name,"motifsUPandDoRBPJ.pdf", sep="")
+pdf(file =figure_name, width=12)
+heatmapUPRBPJ +heatmapDoRBPJ
+dev.off()
+
 
 saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load = FALSE)
 
 
 motifs = c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms", "Lhx1","Csf1r", "Ccr2", "Pax2","Kcnj8","Rlbp1", "Ascl1", "Otx2", "Olig2", "Crx","Neurog2","Rpe65", "Acta2", "Tie1", "Klf4","Grm6","Grik1","Rho", "Arr3", "Tfap2b", "Vsx1","Insm1","Prdm1", "Elavl4","Gnat1", "Pcp2", "Prkca","Cabp5","Isl1","Slc6a9","Gad2","Chat","Sebox","Pou5f1", "Gnat2", "Csf1r")
 
+motifPositions <- getPositions(proj_subset)
 markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
-seFoot <- getFootprints(ArchRProj = proj_subset,positions = motifPositions[markerMotifs],groupBy = "Clusters_Combined")
+seFoot <- getFootprints(ArchRProj = proj_subset,positions = motifPositions[markerMotifs],groupBy = "Celltype")
 #figure will be in OCT4subset/Plots 
 plotFootprints(seFoot = seFoot,ArchRProj = proj_subset,normMethod = "Subtract",plotName = "Footprints-Subtract-Bias",addDOC = FALSE, smoothWindow = 5)
 dev.off() 
