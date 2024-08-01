@@ -167,7 +167,7 @@ figure_name = proj_name
 figure_name <- paste(figure_name,"_ControlsmarkersHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
 subsetSE <- featuresControls[which(rowData(featuresControls)$name %in% markerGenes),]
-markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.5",plotLog2FC = TRUE)
+markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1",plotLog2FC = TRUE)
 draw(markersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
 
@@ -183,7 +183,7 @@ figure_name = proj_name
 figure_name <- paste(figure_name,"_RBPJmarkersHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
 subsetSE <- featuresRBPJ[which(rowData(featuresRBPJ)$name %in% markerGenes),]
-markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.5", plotLog2FC = TRUE)
+markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1", plotLog2FC = TRUE)
 draw(markersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
 
@@ -406,7 +406,8 @@ motifs = c("Rbfox3", "Sebox", "Gad1", "Elavl3","Sox9", "Glul","Pou4f2", "Rbpms",
 
 motifPositions <- getPositions(proj_subset)
 markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = TRUE)))
+#seFoot works only if groubBy is by Celltype 
 seFoot <- getFootprints(ArchRProj = proj_subset,positions = motifPositions[markerMotifs],groupBy = "Celltype")
 #figure will be in OCT4subset/Plots 
-plotFootprints(seFoot = seFoot,ArchRProj = proj_subset,normMethod = "Subtract",plotName = "Footprints-Subtract-Bias",addDOC = FALSE, smoothWindow = 5)
+plotFootprints(seFoot = seFoot,ArchRProj = proj_subset,normMethod = "Subtract",plotName = "OCT4subset_FootprintsCelltype",addDOC = FALSE, smoothWindow = 5)
 dev.off() 

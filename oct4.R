@@ -290,9 +290,9 @@ dev.off()
 
 saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
 
-proj_Clean <- addGroupCoverages(ArchRProj = proj_Clean, groupBy = "Celltype")
-proj_Clean <- addReproduciblePeakSet(ArchRProj = proj_Clean, groupBy = "Celltype", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2")
-proj_Clean <- addPeakMatrix(ArchRProj = proj_Clean)
+proj_Clean <- addGroupCoverages(ArchRProj = proj_Clean, groupBy = "Clusters_Combined", force=TRUE)
+proj_Clean <- addReproduciblePeakSet(ArchRProj = proj_Clean, groupBy = "Clusters_Combined", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2", force=TRUE)
+proj_Clean <- addPeakMatrix(ArchRProj = proj_Clean, force=TRUE)
 proj_Clean <- addPeak2GeneLinks(ArchRProj = proj_Clean, reducedDims = "LSI_Combined", useMatrix = "GeneExpressionMatrix")
 p2g <- getPeak2GeneLinks(ArchRProj = proj_Clean)
 saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
