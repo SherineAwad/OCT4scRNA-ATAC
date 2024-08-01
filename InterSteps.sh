@@ -2,7 +2,7 @@
 
 #Convert peaks CSV file  to bed file 
 Rscript peaksToBed.R SubsetpeaksControlsCCperSample 0
-Rscript SubsetpeaksRBPJCCperSample 0 
+Rscript peaksToBed.R SubsetpeaksRBPJCCperSample 0 
 
 #Use Hommer annotatePeaks.pl to annotate peaks bed file 
 annotatePeaks.pl SubsetpeaksControlsCCperSample.bed mm10 -annStats SubsetpeaksControlsCCperSample.stats > SubsetpeaksControlsCCperSampleAnnotated.bed
