@@ -152,29 +152,9 @@ height = 20
 )
 
 
-#-----------------------------
-#Gex heatmap
-#-----------------------------
-GenesFeatures <- getMarkerFeatures(
-ArchRProj = proj_subset,
-useMatrix = "GeneExpressionMatrix",
-groupBy = "Sample", #you can change to Sample
-c("Gex_nUMI","Gex_nGenes"),
-testMethod = "wilcoxon"
-)
-gexHeatmap <- plotMarkerHeatmap(
-seMarker = GenesFeatures,
-cutOff = "FDR <= 0.05 & Log2FC >= 1",
-transpose = TRUE
-)
-figure_name <- project_name
-figure_name <- paste(figure_name,"_gexHeatmap.pdf", sep="")
-pdf(file =figure_name, width=12)
-draw(gexHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
-dev.off()
-#------------------------
-#MarkerGenes heatmap
-#------------------------
+#------------------------------------------
+#Gex heatmap and markerGenes heatmap
+#------------------------------------------
 featuresControls <- getMarkerFeatures(
 ArchRProj = proj_subset,
 useMatrix = "GeneExpressionMatrix",
@@ -219,10 +199,10 @@ colnames(df) <- c("genes.seqnames", "genes.idx", "genes.start", "genes.end", "ge
 write.csv(df, "Subsetgenes_RBPJ.csv",row.names=FALSE)
 
 #--------------------------------
-#---------------------------------
-#-----------------------------------
+#--------------------------------
+#--------------------------------
 #Calling Peaks 
-#-----------------------------------
+#--------------------------------
 saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load = FALSE)
 #--------------
 #Plotting Peaks 
