@@ -353,6 +353,20 @@ saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load =
 #----------------------
 proj_subset <- addMotifAnnotations(ArchRProj = proj_subset, motifSet = "cisbp", name = "Motif", force=TRUE)
 
+motifs  <-peakAnnoEnrichment(
+    seMarker = peaks,
+    ArchRProj = proj_subset,
+    peakAnnotation = "Motif",
+    cutOff = "FDR >0")
+
+motifsHeatmap <- plotEnrichHeatmap(motifs, n = 20, cutOff=0.5, binaryClusterRows=FALSE)
+figure_name = project_name
+figure_name <- paste(figure_name,"motifs.pdf", sep="")
+pdf(file =figure_name, width=12)
+ComplexHeatmap::draw(motifsHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
+
+
 motifsUPControls <- peakAnnoEnrichment(
     seMarker = peaksControls,
     ArchRProj = proj_subset,
