@@ -155,6 +155,24 @@ height = 20
 #------------------------------------------
 #Gex heatmap and markerGenes heatmap
 #------------------------------------------
+features <- getMarkerFeatures(
+ArchRProj = proj_subset,
+useMatrix = "GeneExpressionMatrix",
+groupBy="Sample",
+bias = c("Gex_nUMI","Gex_nGenes"),
+testMethod = "wilcoxon"
+)
+
+figure_name = proj_name
+figure_name <- paste(figure_name,"_perSamplemarkerGenesHeatmap.pdf", sep="")
+pdf(file =figure_name, width=12)
+subsetSE <- features[which(rowData(features)$name %in% markerGenes),]
+markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1",plotLog2FC = TRUE)
+draw(markersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
+
+
+
 featuresControls <- getMarkerFeatures(
 ArchRProj = proj_subset,
 useMatrix = "GeneExpressionMatrix",
@@ -167,8 +185,8 @@ figure_name = proj_name
 figure_name <- paste(figure_name,"_ControlsmarkersHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
 subsetSE <- featuresControls[which(rowData(featuresControls)$name %in% markerGenes),]
-markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1",plotLog2FC = TRUE)
-draw(markersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+ControlsmarkersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1",plotLog2FC = TRUE)
+draw(ControlsmarkersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
 
 featuresRBPJ <- getMarkerFeatures(
@@ -183,9 +201,10 @@ figure_name = proj_name
 figure_name <- paste(figure_name,"_RBPJmarkersHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
 subsetSE <- featuresRBPJ[which(rowData(featuresRBPJ)$name %in% markerGenes),]
-markersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1", plotLog2FC = TRUE)
-draw(markersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+RBPJmarkersHeatmap <- plotMarkerHeatmap(seMarker = subsetSE,cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.1", plotLog2FC = TRUE)
+draw(RBPJmarkersHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
+
 
 
 df <- data.frame(genes=rowData(featuresControls), Log2FC=assays(featuresControls)$Log2FC, FDR=assays(featuresControls)$FDR, Mean= assays(featuresControls)$Mean, 
@@ -207,6 +226,36 @@ saveArchRProject(ArchRProj = proj_subset, outputDirectory = "OCT4subset", load =
 #--------------
 #Plotting Peaks 
 #--------------
+peaks <- getMarkerFeatures(
+ArchRProj = proj_subset,
+useMatrix = "PeakMatrix",
+groupBy = "Sample",
+bias = c("TSSEnrichment", "log10(nFrags)"),
+testMethod = "wilcoxon"
+)
+
+peaksGR <- getMarkers(
+seMarker = peaks,
+cutOff = "FDR >= 0",
+n = NULL,
+returnGR = TRUE)
+
+
+write.csv(peaksGR, "SubsetpeaksCCperSample.csv",row.names=FALSE)
+
+
+
+heatmapPeaks <- plotMarkerHeatmap(
+  seMarker = peaks,
+  cutOff = "FDR <= 0.5 & Log2FC >= 0.5",
+  transpose = TRUE,plotLog2FC = TRUE
+)
+
+figure_name <- project_name
+figure_name <- paste(figure_name,"_peaksheatmap.pdf", sep="")
+pdf(file =figure_name, width=12)
+draw(heatmapPeaks, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
 
 
 peaksRBPJ <- getMarkerFeatures(
@@ -250,7 +299,7 @@ write.csv(peaksRBPJGR, "SubsetpeaksRBPJCCperSample.csv",row.names=FALSE)
 
 heatmapPeaksControls <- plotMarkerHeatmap(
   seMarker = peaksControls,
-  cutOff = "FDR <= 0.5 & abs(Log2FC) >= 0.5",
+  cutOff = "FDR <= 0.5 & Log2FC >= 0.5",
   transpose = TRUE,plotLog2FC = TRUE
 )
 
@@ -263,7 +312,7 @@ dev.off()
 
 heatmapPeaksRBPJ <- plotMarkerHeatmap(
   seMarker = peaksRBPJ,
-  cutOff = "FDR <= 0.5 & abs(Log2FC >= 0.5)",
+  cutOff = "FDR <= 0.5 & Log2FC >= 0.5",
   transpose = TRUE,plotLog2FC = TRUE
 )
 
@@ -332,26 +381,32 @@ motifsDoRBPJ <-peakAnnoEnrichment(
     cutOff = "FDR <= 0.5 & Log2FC <= -0.5"  )
 
 
-dfUPControls <-data.frame(TF =rownames(motifsUPControls), mlog10Padj =assay(motifsUPControls)[,1])
-dfUPControls <- dfUPControls[order(dfUPControls$mlog10Padj, decreasing = TRUE),]
+dfUPControls <-data.frame(TF =rownames(motifsUPControls), mlog10Padj =assay(motifsUPControls)[,1], mlog10p =assays(motifsUPControls)[2],  Enrichment =assays(motifsUPControls)[3], BackgroundProporition= assays(motifsUPControls)[4], nBackground=assays(motifsUPControls)[5], BackgroundFrequency=assays(motifsUPControls)[6], CompareProportion=assays(motifsUPControls)[7], nCompare=assays(motifsUPControls)[8],
+CompareFrequency=assays(motifsUPControls)[9],feature=assays(motifsUPControls)[10] ) 
+dfUPControls <- dfUPControls[order(dfUPControls$mlog10Padj, decreasing = FALSE),]
 dfUPControls$rank <-seq_len(nrow(dfUPControls))
-write.csv(dfUPControls, "SubsetCCdfUPControls.csv") 
+write.csv(dfUPControls, "SubsetCCdfUPControlsALLCols.csv") 
 
-dfUPRBPJ <-data.frame(TF =rownames(motifsUPRBPJ), mlog10Padj =assay(motifsUPRBPJ)[,1])
+dfUPRBPJ <-data.frame(TF =rownames(motifsUPRBPJ), mlog10Padj =assay(motifsUPRBPJ)[,1], mlog10p =assays(motifsUPRBPJ)[2],  Enrichment =assays(motifsUPRBPJ)[3], BackgroundProporition= assays(motifsUPRBPJ)[4], nBackground=assays(motifsUPRBPJ)[5], BackgroundFrequency=assays(motifsUPRBPJ)[6], CompareProportion=assays(motifsUPRBPJ)[7], nCompare=assays(motifsUPRBPJ)[8],
+CompareFrequency=assays(motifsUPRBPJ)[9],feature=assays(motifsUPRBPJ)[10] )
 dfUPRBPJ <- dfUPRBPJ[order(dfUPRBPJ$mlog10Padj, decreasing = TRUE),]
 dfUPRBPJ$rank <-seq_len(nrow(dfUPRBPJ))
-write.csv(dfUPRBPJ, "SubsetCCdfUPRBPJ.csv") 
+write.csv(dfUPRBPJ, "SubsetCCdfUPRBPJALLCols.csv") 
 
 
-dfDoControls <-data.frame(TF =rownames(motifsDoControls), mlog10Padj =assay(motifsDoControls)[,1])
+dfDoControls <-data.frame(TF =rownames(motifsDoControls), mlog10Padj =assay(motifsDoControls)[,1], mlog10p =assays(motifsDoControls)[2],  Enrichment =assays(motifsDoControls)[3], BackgroundProporition= assays(motifsDoControls)[4], nBackground=assays(motifsDoControls)[5], BackgroundFrequency=assays(motifsDoControls)[6], CompareProportion=assays(motifsDoControls)[7], nCompare=assays(motifsDoControls)[8],
+CompareFrequency=assays(motifsDoControls)[9],feature=assays(motifsDoControls)[10] )
 dfDoControls <- dfDoControls[order(dfDoControls$mlog10Padj, decreasing = TRUE),]
 dfDoControls$rank <-seq_len(nrow(dfDoControls))
-write.csv(dfDoControls, "SubsetCCdfDoControls.csv")
+write.csv(dfDoControls, "SubsetCCdfDoControlsALLCols.csv")
 
-dfDoRBPJ <-data.frame(TF =rownames(motifsDoRBPJ), mlog10Padj =assay(motifsDoRBPJ)[,1])
+
+dfDoRBPJ <-data.frame(TF =rownames(motifsDoRBPJ), mlog10Padj =assay(motifsDoRBPJ)[,1], mlog10p =assays(motifsDoRBPJ)[2],  Enrichment =assays(motifsDoRBPJ)[3], BackgroundProporition= assays(motifsDoRBPJ)[4], nBackground=assays(motifsDoRBPJ)[5], BackgroundFrequency=assays(motifsDoRBPJ)[6], CompareProportion=assays(motifsDoRBPJ)[7], nCompare=assays(motifsDoRBPJ)[8],
+CompareFrequency=assays(motifsDoRBPJ)[9],feature=assays(motifsDoRBPJ)[10] )
+
 dfDoRBPJ <- dfDoRBPJ[order(dfDoRBPJ$mlog10Padj, decreasing = TRUE),]
 dfDoRBPJ$rank <-seq_len(nrow(dfDoRBPJ))
-write.csv(dfDoRBPJ, "SubsetCCdfDoRBPJ.csv")
+write.csv(dfDoRBPJ, "SubsetCCdfDoRBPJALLCols.csv")
 
 
 heatmapUPControls <- plotEnrichHeatmap(motifsUPControls, n = 30, cutOff=0.5, transpose = FALSE)
