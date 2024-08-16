@@ -60,7 +60,8 @@ testMethod = "wilcoxon"
 
 PeaksHeatmap <- plotMarkerHeatmap(
   seMarker = peaks,
-  cutOff = "FDR <= 0.1 & Log2FC >= 0.5",
+  nPrint = 50,
+  cutOff = "FDR <= 0.1 & Log2FC >= 0.1",
   transpose = TRUE,plotLog2FC = TRUE
 )
 
@@ -71,7 +72,8 @@ draw(PeaksHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot", 
 dev.off()
 
 #Plot Motifs 
-
+if(FALSE)
+{
 motifs  <-peakAnnoEnrichment(
     seMarker = peaks,
     ArchRProj = myProject,
@@ -85,7 +87,7 @@ figure_name <- paste(figure_name,"motifs.pdf", sep="")
 pdf(file =figure_name, width=12)
 ComplexHeatmap::draw(MotifHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot",row_order=c(  "Rod", "Cone", "Amacrine","Bipolar","MGPC", "KO MG","WT MG" ))
 dev.off()
-
+}
 
 saveArchRProject(ArchRProj = myProject, outputDirectory = "OCT4_Clean", load = FALSE)
 
@@ -98,15 +100,15 @@ myProject <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRU
 #PER SAMPLE 
 ##################
 
-DEGs <- getMarkerFeatures(
+perSampleDEGs <- getMarkerFeatures(
 ArchRProj = myProject,
 useMatrix = "GeneExpressionMatrix",
 groupBy = "Sample",bias = c("Gex_nUMI","Gex_nGenes"),
-testMethod = "wilcoxon"
+estMethod = "wilcoxon"
 )
 
-DEGsHeatmap <- plotMarkerHeatmap(
-  seMarker = DEGs,
+perSampleDEGsHeatmap <- plotMarkerHeatmap(
+  seMarker = perSampleDEGs,
   nPrint = 100,
   clusterCols = TRUE,
   cutOff = "FDR <= 0.1 & Log2FC >= 0.5",
@@ -117,10 +119,10 @@ DEGsHeatmap <- plotMarkerHeatmap(
 figure_name = project_name
 figure_name <- paste(figure_name,"_perSampleDEGsHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
-draw(DEGsHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot", row_order=c(  "Rod", "Cone", "Amacrine","Bipolar","MGPC", "KO MG","WT MG" ))
+draw(perSampleDEGsHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot") 
 dev.off()
 
-peaks <- getMarkerFeatures(
+perSamplePeaks <- getMarkerFeatures(
 ArchRProj = myProject,
 useMatrix = "PeakMatrix",
 groupBy = "Sample",
@@ -128,8 +130,8 @@ bias = c("TSSEnrichment", "log10(nFrags)"),
 testMethod = "wilcoxon"
 )
 
-PeaksHeatmap <- plotMarkerHeatmap(
-  seMarker = peaks,
+perSamplePeaksHeatmap <- plotMarkerHeatmap(
+  seMarker = perSamplePeaks,
   cutOff = "FDR <= 0.1 & Log2FC >= 0.5",
   transpose = TRUE,plotLog2FC = TRUE
 )
@@ -137,9 +139,22 @@ PeaksHeatmap <- plotMarkerHeatmap(
 figure_name <- project_name
 figure_name <- paste(figure_name,"_perSamplePeaksHeatmap.pdf", sep="")
 pdf(file =figure_name, width=12)
-draw(PeaksHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot", row_order=c(  "Rod", "Cone", "Amacrine","Bipolar","MGPC", "KO MG","WT MG" ))
+draw(perSamplePeaksHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
 dev.off()
 
+perSampleMotifs  <-peakAnnoEnrichment(
+    seMarker = perSamplePeaks,
+    ArchRProj = myProject,
+    peakAnnotation = "Motif",
+    cutOff = "FDR <= 0.1 & Log2FC >= 0.5")
+
+
+perSampleMotifHeatmap <- plotEnrichHeatmap(perSampleMotifs, n =30, cutOff=0.5, transpose = TRUE)
+figure_name =project_name
+figure_name <- paste(figure_name,"perSampleMotifs.pdf", sep="")
+pdf(file =figure_name, width=12)
+ComplexHeatmap::draw(perSampleMotifHeatmap, heatmap_legend_side = "bot", annotation_legend_side = "bot")
+dev.off()
 
 saveArchRProject(ArchRProj = myProject, outputDirectory = "OCT4subset", load = FALSE)
 
