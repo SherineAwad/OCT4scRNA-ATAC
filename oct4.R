@@ -312,3 +312,9 @@ testMethod = "wilcoxon"
 celltypes <- c("WT MG","KO MG")
 proj_subset = subsetArchRProject(proj_Clean,proj_Clean$cellNames[proj_Clean$Celltype %in% celltypes] , outputDirectory = "OCT4subset" ,force =TRUE,dropCells = TRUE)
 
+
+samples <- c("Control_Oct4","Control_mCherry")
+
+MG_Controls = subsetArchRProject(myProject,myProject$cellNames[myProject$Sample %in% samples] , outputDirectory = "MG_Control_subset" ,force =TRUE,dropCells = TRUE)
+
+
