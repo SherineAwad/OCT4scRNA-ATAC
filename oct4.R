@@ -317,4 +317,7 @@ samples <- c("Control_Oct4","Control_mCherry")
 
 MG_Controls = subsetArchRProject(myProject,myProject$cellNames[myProject$Sample %in% samples] , outputDirectory = "MG_Control_subset" ,force =TRUE,dropCells = TRUE)
 
+samples <- c("Control_Oct4","Rbpj_Oct4")
+
+OCT4 = subsetArchRProject(myProject,myProject$cellNames[myProject$Sample %in% samples] , outputDirectory = "Oct4Only"  ,force =TRUE,dropCells = TRUE)
 
