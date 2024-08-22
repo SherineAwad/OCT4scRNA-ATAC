@@ -258,6 +258,12 @@ filename =project_name
 filename <- paste(filename, "MotifsDoRbpj.csv", sep="_")
 write.csv(dfDoRBPJ, filename)
 
+dfDoRBPJ <- dfDoRBPJ[order(dfDoRBPJ$mlog10Padj, decreasing = TRUE),]
+dfDoRBPJ$rank <-seq_len(nrow(dfDoRBPJ))
+filename =project_name
+filename <- paste(filename, "MotifsDoRbpj.csv", sep="_")
+write.csv(dfDoRBPJ, filename)
+
 
 heatmapUPControls <- plotEnrichHeatmap(motifsUPControls, n = 30, cutOff=0.5, transpose = FALSE)
 figure_name = project_name
@@ -347,3 +353,5 @@ markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions),
 seFoot <- getFootprints(ArchRProj = proj_subset,positions = motifPositions[markerMotifs],groupBy = "Celltype")
 #figure will be in OCT4subset/Plots 
 plotFootprints(seFoot = seFoot,ArchRProj = proj_subset,normMethod = "Subtract",plotName = "OCT4subset_FootprintsCelltype",addDOC = FALSE, smoothWindow = 5)
+
+

@@ -2,8 +2,7 @@
 
 #Convert peaks CSV file  to bed file 
 Rscript peaksToBed.R OCT4subset_PeaksControls 0
-Rscript peaksToBed.R OCT4subset_PeaksRBPJ 0 
-
+Rscript peaksToBed.R OCT4subset_PeaksRBPJ 0
 #Use Hommer annotatePeaks.pl to annotate peaks bed file 
 annotatePeaks.pl OCT4subset_PeaksControls.bed mm10 -annStats OCT4subset_PeaksControls.stats > OCT4subset_PeaksControlsAnnotated.bed
 annotatePeaks.pl OCT4subset_PeaksRBPJ.bed mm10 -annStats OCT4subset_PeaksRBPJ.stats > OCT4subset_PeaksRBPJAnnotated.bed
