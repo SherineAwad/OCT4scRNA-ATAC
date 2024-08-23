@@ -199,7 +199,6 @@ p <- plotGroups(
 p
 dev.off()
 
-saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 #----------------------------------
 figure_name <- project_name
 figure_name <- paste(figure_name,"_clustersUMAP.pdf", sep="")
@@ -229,6 +228,8 @@ p1 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Sampl
 p2 <- plotEmbedding(ArchRProj = proj_ALL, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Combined")
 ggAlignPlots(p1, p2, type = "h")
 dev.off()
+
+saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 
 #Remove some clusters 
 
@@ -278,46 +279,7 @@ Newlabel <- c(
 proj_Clean$Celltype <-  mapLabels(proj_Clean$Clusters_Combined, newLabels = Newlabel)
 
 
-figure_name <- project_name
-figure_name <- paste(figure_name,"_NCleanSamplesUMAP.pdf", sep="")
-pdf(file =figure_name, width=12)
-p1 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Sample", embedding = "UMAP_Combined")
-p2 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Combined")
-p3 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Celltype", embedding = "UMAP_Combined")
-ggAlignPlots(p1, p2,p3, type = "h")
-dev.off()
-
 
 saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
 
-
-proj_Clean <- addGroupCoverages(ArchRProj = proj_Clean, groupBy = "Clusters_Combined", force=TRUE)
-proj_Clean <- addReproduciblePeakSet(ArchRProj = proj_Clean, groupBy = "Clusters_Combined", pathToMacs2 = "/nfs/turbo/umms-thahoang/sherine/miniconda/envs/archr/bin/macs2", force=TRUE)
-proj_Clean <- addPeakMatrix(ArchRProj = proj_Clean, force=TRUE)
-proj_Clean <- addPeak2GeneLinks(ArchRProj = proj_Clean, reducedDims = "LSI_Combined", useMatrix = "GeneExpressionMatrix")
-p2g <- getPeak2GeneLinks(ArchRProj = proj_Clean)
-saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
-
-
-
-features <- getMarkerFeatures(
-ArchRProj = proj_Clean,
-useMatrix = "GeneExpressionMatrix",
-groupBy = "Celltype",bias = c("Gex_nUMI","Gex_nGenes"),
-testMethod = "wilcoxon"
-)
-
-
-#SUBET by celltype WT_MG and KO_MG
-celltypes <- c("WT MG","KO MG")
-proj_subset = subsetArchRProject(proj_Clean,proj_Clean$cellNames[proj_Clean$Celltype %in% celltypes] , outputDirectory = "OCT4subset" ,force =TRUE,dropCells = TRUE)
-
-
-samples <- c("Control_Oct4","Control_mCherry")
-
-MG_Controls = subsetArchRProject(myProject,myProject$cellNames[myProject$Sample %in% samples] , outputDirectory = "MG_Control_subset" ,force =TRUE,dropCells = TRUE)
-
-samples <- c("Control_Oct4","Rbpj_Oct4")
-
-OCT4 = subsetArchRProject(myProject,myProject$cellNames[myProject$Sample %in% samples] , outputDirectory = "Oct4Only"  ,force =TRUE,dropCells = TRUE)
 

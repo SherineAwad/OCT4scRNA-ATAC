@@ -17,51 +17,74 @@ addArchRGenome("mm10")
 args <- commandArgs(trailingOnly = TRUE)
 
 project_name = args[1]
-proj_subset <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRUE)
+myProject <- loadArchRProject(path = project_name, force = FALSE, showLogo = TRUE)
 
 #Add ImputeWeights if not added already 
-proj_subset <- addImputeWeights(proj_subset,reducedDims="LSI_Combined")
+myProject <- addImputeWeights(myProject,reducedDims="LSI_Combined")
 
 #Trajectory 
 trajectory <- c("WT MG", "KO MG", "MGPC", "Bipolar") 
-proj_subset <- addTrajectory(
-    ArchRProj = proj_subset, 
+myProject <- addTrajectory(
+    ArchRProj = myProject, 
     name = "trajectory", 
     groupBy = "Celltype",
     trajectory = trajectory, 
     embedding = "UMAP_Combined", 
     force = TRUE
 )
-p <- plotTrajectory(proj_subset, trajectory = "trajectory", colorBy = "cellColData", embedding="UMAP_Combined", imputeWeights = 
-    getImputeWeights(proj_subset),name ="trajectory", continuousSet = "blueYellow") 
+p <- plotTrajectory(myProject, trajectory = "trajectory", colorBy = "cellColData", embedding="UMAP_Combined", imputeWeights = 
+    getImputeWeights(myProject),name ="trajectory", continuousSet = "blueYellow") 
+p
+plotPDF(p, name = "TrajectoryUMAP.pdf", ArchRProj = myProject, addDOC = FALSE, width = 5, height = 5)
 
-p[[1]]
+#Change Matrix to peaks or motif matrix, however motif matrix will need to run the next steps first 
+trajGIM <- getTrajectory(ArchRProj = myProject, name = "trajectory", useMatrix = "GeneExpressionMatrix", log2Norm = FALSE)
+trajPeaks <- getTrajectory(ArchRProj = myProject, name = "trajectory", useMatrix = "PeakMatrix", log2Norm = FALSE)
 
-plotPDF(p, name = "TrajectoryUMAP.pdf", ArchRProj = proj_subset, addDOC = FALSE, width = 5, height = 5)
+#You can change returnMatrix parameter to True if you need to print the matrix of the heatmap 
+p1 <- plotTrajectoryHeatmap(trajGIM, pal = paletteContinuous(set = "solarExtra"))
+p2 <- plotTrajectoryHeatmap(trajPeaks, pal = paletteContinuous(set = "solarExtra"))
 
-
-trajGIM <- getTrajectory(ArchRProj = proj_subset, name = "trajectory", useMatrix = "GeneExpressionMatrix", log2Norm = FALSE)
-
+plotPDF(p1, p2,  name = "Traj-Heatmaps.pdf", ArchRProj = myProject, addDOC = FALSE, width = 6, height = 8)
 
 
 #ADD Motif Matrix - Motif deviation 
-if("Motif" %ni% names(proj_subset@peakAnnotation)){
-    proj_subset <- addMotifAnnotations(ArchRProj = proj_subset, motifSet = "cisbp", name = "Motif")
-}
+if("Motif" %ni% names(myProject@peakAnnotation)){
+    myProject <- addMotifAnnotations(ArchRProj = myProject, motifSet = "cisbp", name = "Motif")}
 
 
-proj_subset <- addBgdPeaks(proj_subset)
 
-proj_subset <- addDeviationsMatrix(
-  ArchRProj = proj_subset, 
+myProject <- addBgdPeaks(myProject)
+
+myProject <- addDeviationsMatrix(
+  ArchRProj = myProject, 
   peakAnnotation = "Motif",
-  force = TRUE
+  force = FALSE
 )
 
-plotVarDev <- getVarDeviations(proj_subset, name = "MotifMatrix", plot = TRUE)
+plotVarDev <- getVarDeviations(myProject, name = "MotifMatrix", plot = TRUE)
 
 plotVarDev
-plotPDF(plotVarDev, name = "Variable-Motif-Deviation-Scores", width = 5, height = 5, ArchRProj = proj_subset, addDOC = FALSE)
+plotPDF(plotVarDev, name = "Variable-Motif-Deviation-Scores", width = 5, height = 5, ArchRProj = myProject, addDOC = FALSE)
 
-saveArchRProject(ArchRProj = proj_Clean, outputDirectory = project_name, load = FALSE)
+
+motifs <- c("Pou5f1", "Rfx4", "Klf4")
+markerMotifs <- getFeatures(myProject, select = paste(motifs, collapse="|"), useMatrix = "MotifMatrix")
+markerMotifs
+
+figure_name =project_name
+figure_name <- paste(figure_name,"_MotifUMAP.pdf", sep="")
+pdf(file =figure_name, width=12)
+
+#You can use imputeWeights=getImputeWeights etc 
+p <- plotEmbedding(
+    ArchRProj = myProject,
+    colorBy = "MotifMatrix",
+    name = sort(markerMotifs),
+    embedding ="UMAP_Combined",
+    imputeWeights = NULL)
+p
+dev.off()
+
+saveArchRProject(ArchRProj = myProject, outputDirectory = project_name, load = FALSE)
 
