@@ -231,55 +231,5 @@ dev.off()
 
 saveArchRProject(ArchRProj = proj_ALL, outputDirectory = "OCT4RBPJ", load = FALSE)
 
-#Remove some clusters 
-
-clusters <- c("C2", "C3","C4", "C5", "C6", "C8", "C9", "C10", "C11", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24")
-proj_Clean = subsetArchRProject(proj_ALL,proj_ALL$cellNames[proj_ALL$Clusters_Combined %in% clusters] , outputDirectory = "OCT4_Clean" ,force =TRUE,dropCells = TRUE)
-
-proj_Clean <- addUMAP(proj_Clean, reducedDims = "LSI_Combined", dimsToUse = 1:20, name = "UMAP_Combined", minDist = 0.4, force = TRUE)
-proj_Clean <- addClusters(proj_Clean, reducedDims = "LSI_Combined",dimsToUse = 1:20, name = "Clusters_Combined", resolution = 1.2, force = TRUE)
-proj_Clean <- addImputeWeights(ArchRProj = proj_Clean,reducedDims = "LSI_Combined") #, scaleDims=TRUE, corCutOff =0.5)
-
-figure_name <- project_name
-figure_name <- paste(figure_name,"_CleanSamplesUMAP.pdf", sep="")
-pdf(file =figure_name, width=12)
-p1 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Sample", embedding = "UMAP_Combined")
-p2 <- plotEmbedding(ArchRProj = proj_Clean, colorBy = "cellColData", name = "Clusters_Combined", embedding = "UMAP_Combined")
-ggAlignPlots(p1, p2, type = "h")
-dev.off()
-
-saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
-
-
-Newlabel <- c(
-"C1" = "Cone",
-"C2" ="Rod",
-"C3"= "Cone",
-"C4"="Bipolar",
-"C5"="Bipolar",
-"C6"="Amacrine",
-"C7"= "KO MG",
-"C8"="KO MG",
-"C9"="WT MG",
-"C10"="WT MG",
-"C11"="WT MG",
-"C12"="WT MG",
-"C13"="WT MG",
-"C14"="KO MG",
-"C15"="WT MG",
-"C16"="WT MG",
-"C17"="KO MG",
-"C18"="MGPC",
-"C19"="WT MG",
-"C20"="KO MG",
-"C21"="KO MG",
-"C22"="KO MG")
-
-
-proj_Clean$Celltype <-  mapLabels(proj_Clean$Clusters_Combined, newLabels = Newlabel)
-
-
-
-saveArchRProject(ArchRProj = proj_Clean, outputDirectory = "OCT4_Clean", load = FALSE)
 
 
